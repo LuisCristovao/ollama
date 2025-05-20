@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Ollama Chat</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        background: #f0f2f5;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+
+      .container {
+        background: #fff;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        width: 100%;
+        text-align: center;
+      }
+
+      h2 {
+        margin-bottom: 1rem;
+      }
+
+      textarea {
+        width: 100%;
+        height: 100px;
+        padding: 0.8rem;
+        font-size: 1rem;
+        resize: none;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        box-sizing: border-box;
+      }
+
+      button {
+        margin-top: 1rem;
+        padding: 0.6rem 1.5rem;
+        font-size: 1rem;
+        border: none;
+        background-color: #007bff;
+        color: white;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      #chat {
+        text-align: left;
+        white-space: pre-wrap;
+        margin-top: 2rem;
+        background: #f9f9f9;
+        padding: 1rem;
+        border-radius: 8px;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>🧠 Ollama Local Chat</h2>
+      <textarea id="prompt" placeholder="Type your message..."></textarea>
+      <button onclick="ask()" id="sendBtn">Send</button>
+
+      <div id="chat"></div>
+    </div>
+
+    <script>
+    const systemContext = `System: You are a helpful assistant that is very friendly and informal`;
+
+      const chatHistory = [];
+
+      document
+        .getElementById("prompt")
+        .addEventListener("keydown", function (e) {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            ask();
+          }
+        });
+
+      async function ask() {
+        const input = document.getElementById("prompt");
+        const sendBtn = document.getElementById("sendBtn");
+        const userMessage = input.value.trim();
+        if (!userMessage) return;
+
+        chatHistory.push({ role: "user", content: userMessage });
+        input.value = "";
+        sendBtn.disabled = true;
+        updateChatDisplay("Thinking...");
+
+        const fullPrompt =
+          systemContext + chatHistory
+            .map(
+              (m) =>
+                (m.role === "user" ? "User" : "Assistant") + ": " + m.content
+            )
+            .join("\n") + "\nAssistant:";
+
+        const res = await fetch("/api/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: fullPrompt }),
+        });
+
+        const data = await res.json();
+        const botReply = data.response || "⚠️ Error from Ollama.";
+        chatHistory.push({ role: "assistant", content: botReply });
+
+        updateChatDisplay();
+        sendBtn.disabled = false;
+      }
+
+      function updateChatDisplay(status = "") {
+        const chatBox = document.getElementById("chat");
+        chatBox.textContent =
+          chatHistory
+            .map(
+              (m) =>
+                (m.role === "user" ? "🧑 You" : "🤖 Ollama") + ": " + m.content
+            )
+            .join("\n\n") + (status ? `\n\n${status}` : "");
+
+        // 🔽 Auto-scroll to bottom
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }
+    </script>
+  </body>
+</html>
