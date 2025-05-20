@@ -58,7 +58,7 @@
       #chat {
         text-align: left;
         white-space: pre-wrap;
-        margin-top: 2rem;
+        margin-bottom: 2rem;
         background: #f9f9f9;
         padding: 1rem;
         border-radius: 8px;
@@ -70,10 +70,11 @@
   <body>
     <div class="container">
       <h2>🧠 Ollama Local Chat</h2>
+      <div id="chat"></div>
       <textarea id="prompt" placeholder="Type your message..."></textarea>
       <button onclick="ask()" id="sendBtn">Send</button>
 
-      <div id="chat"></div>
+      
     </div>
 
     <script>
