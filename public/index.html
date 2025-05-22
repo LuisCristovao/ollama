@@ -141,6 +141,9 @@
         // 🔽 Auto-scroll to bottom
         chatBox.scrollTop = chatBox.scrollHeight;
       }
+      //Initial Text
+      chatHistory.push({ role: "AI", content: "Hello, how may I assist you in getting to know Luis?" });
+      updateChatDisplay()
     </script>
   </body>
 </html>
